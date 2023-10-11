@@ -77,7 +77,7 @@ def sol_Laplace_Equation_Axb(f, dom2Inp, param):
     # North side boundary conditions
     i = 1  # topmost row of the image (excluding the corner)
 
-    for j in range(1, nj + 2, 1):
+    for j in range(1, nj + 3, 1):
         # from image matrix (i, j) coordinates to vectorial(p) coordinate to translates the 2D position to a 1D position
         p = (j - 1) * (ni + 2) + i
 
@@ -103,7 +103,7 @@ def sol_Laplace_Equation_Axb(f, dom2Inp, param):
     i = ni + 2
 
     # we are iterating over each column j of the padded image, covering the entirety of the south boundary
-    for j in range(1, nj + 2, 1):
+    for j in range(1, nj + 3, 1):
         p = (j - 1) * (ni + 2) + i
 
         # u(i,j) is influenced by u(i,j) own and above one u(i−1,j)
@@ -117,7 +117,7 @@ def sol_Laplace_Equation_Axb(f, dom2Inp, param):
 
     # West side boundary conditions
     j = 1
-    for i in range(1, ni + 2, 1):
+    for i in range(1, ni + 3, 1):
         p = (j - 1) * (ni + 2) + i
 
         idx_Ai.extend([p, p])
@@ -127,7 +127,7 @@ def sol_Laplace_Equation_Axb(f, dom2Inp, param):
 
     # East side boundary conditions
     j = nj + 2
-    for i in range(1, ni + 2, 1):
+    for i in range(1, ni + 3, 1):
         p = (j - 1) * (ni + 2) + i
 
         idx_Ai.extend([p, p])
