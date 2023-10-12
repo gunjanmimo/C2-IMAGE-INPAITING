@@ -1,12 +1,16 @@
+# TEAM 4 WEEK 1
+
 # %%
 import cv2
 import numpy as np
-import sol_Laplace_Equation_Axb
-
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
+from sol_Laplace_Equation_Axb import sol_Laplace_Equation_Axb
+import os
 
 
 # %%
+# Parameter class
 @dataclass
 class Parameters:
     hi: float
@@ -16,255 +20,135 @@ class Parameters:
     tol: float
 
 
-# Example script: You should replace the beginning of each function ('sol')
-# with the name of your group. i.e. if your gropu name is 'G8' you should
-# call :
-# G8_DualTV_Inpainting_GD(I, mask, paramInp, paramROF)
+# %%
+# Function to perform inpainting
+def image_inpainting(I, mask_image, result_folder, image_name):
+    if mask_image is None:
+        print(f"Error: Mask image for {image_name} not found or couldn't be read.")
+        return I
+
+    min_val = np.min(I.ravel())
+    max_val = np.max(I.ravel())
+    I = (I.astype("float") - min_val) / max_val
+
+    ni, nj = I.shape[0], I.shape[1]
+
+    mask1 = mask_image > 128
+    mask = mask1.astype("float")
+
+    param = Parameters(0, 0, 0, 0, 0)
+    param.hi = 1 / (ni - 1)
+    param.hj = 1 / (nj - 1)
+
+    if len(I.shape) == 3:
+        Iinp = np.zeros(I.shape, dtype=np.float32)
+        for channel in range(I.shape[2]):
+            Iinp[:, :, channel] = sol_Laplace_Equation_Axb(
+                I[:, :, channel], mask[:, :, channel], param
+            )
+    else:
+        Iinp = sol_Laplace_Equation_Axb(I, mask, param)
+
+    # Save the inpainted image
+    result_path = os.path.join(result_folder, f"{image_name}_inpaint.jpg")
+    I_save = cv2.cvtColor(
+        (Iinp * max_val + min_val).astype(np.uint8), cv2.COLOR_RGB2BGR
+    )
+
+    cv2.imwrite(result_path, I_save)
+    # cv2.imwrite(result_path, Iinp)
+
+    # Display the original and inpainted images
+    fig, axarr = plt.subplots(1, 2, figsize=(10, 5))
+    axarr[0].imshow(I)
+    axarr[0].axis("off")
+    axarr[0].set_title("Before inpainting")
+
+    axarr[1].imshow(Iinp)
+    axarr[1].axis("off")
+    axarr[1].set_title("After inpainting")
+
+    plt.tight_layout()
+    plt.show()
 
 
-# ======>>>>  input data  <<<<=======
-# folder with the images
-folderInput = "/Users/angelicaatehortua/Documents/posdoctorado/sueltos/solution/"
+# %%
+# Paths and filenames
+folderInput = "./images"
+result_folder = "./images/results"
+# %%
+image_names = [
+    "image1",
+    "image2",
+    "image3",
+    "image4",
+    "image5",
+]
 
+for image_name in image_names:
+    # Read the image to be restored
+    image_path = f"{folderInput}/{image_name}_toRestore.jpg"
+    I = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
-# There are several black and white images to test:
-#  image1_toRestore.jpg
-#  image2_toRestore.jpg
-#  image3_toRestore.jpg
-#  image4_toRestore.jpg
-#  image5_toRestore.jpg
+    # Read the corresponding mask
+    mask_path = f"{folderInput}/{image_name}_mask.jpg"
+    mask_img = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
 
-# figure name to process. Options: image1 to image5
-figure_name = "image1"
+    # Perform inpainting and save the result
+    image_inpainting(I, mask_img, result_folder, image_name)
 
-# ======>>>>  process  <<<<=======
-
-# read an image
-figure_name_final = folderInput + figure_name + "_toRestore.jpg"
-I = cv2.imread(figure_name_final, cv2.IMREAD_UNCHANGED)
-
-# Number of pixels for each dimension, and number of channles
-# get dimensions of image
-dimensions = I.shape
-
-# height, width, number of channels in image
-height = I.shape[0]
-width = I.shape[1]
-
-print("Image Dimension    : ", dimensions)
-print("Image Height       : ", height)
-print("Image Width        : ", width)
-
-# show image
-cv2.imshow("image", I)
-cv2.waitKey(0)
-
-# Normalize values into [0,1]
-
-min_val = np.min(I.ravel())
-max_val = np.max(I.ravel())
-I = I.astype("float") - min_val
-I = I / max_val
-
-# show normalized image
-cv2.imshow("Normalized image", I)
-cv2.waitKey(0)
-
-# visualize the normalized image
-cv2.imshow("Normalized Image", I)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-print("Image data after Normalize:\n", I)
-
-# Load the mask
-mask_img_name = folderInput + figure_name + "_mask.jpg"
-mask_img = cv2.imread(mask_img_name, cv2.IMREAD_UNCHANGED)
-
-cv2.imshow("mask_img", mask_img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# height, width, number of channels in image
-height_mask = mask_img.shape[0]
-width_mask = mask_img.shape[1]
-dimensions_mask = mask_img.shape
-
-ni = height_mask
-nj = width_mask
-
-print("Mask Dimension    : ", dimensions_mask)
-print("Mask Height       : ", height_mask)
-print("Mask Width        : ", width_mask)
-
-# We want to inpaint those areas in which mask == 1
-mask1 = mask_img > 128
-mask = mask1.astype("float")
-
-# mask(i,j) == 1 means we have lost information in that pixel
-# mask(i,j) == 0 means we have information in that pixel
-
-# visualize the mask
-cv2.imshow("mask>128", mask)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-#  Parameters
-
-param = Parameters(0, 0, 0, 0, 0)
-param.hi = 1 / (ni - 1)
-param.hj = 1 / (nj - 1)
-
-#  Parameters for gradient descent (you do not need for week1)
-param.dt = 5 * 10 ^ -7
-param.iterMax = 10 ^ 4
-param.tol = 10 ^ -5
-
-# visualize the mask
-cv2.imshow("Before", I)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-u = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(I, mask, param)
-
-# visualize the final image
-cv2.imshow("After", u)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-#  Challenge image. (We have lost 99% of information)
-del I, u, mask_img
+# %%
 figure_name = "image6"
-figure_name_final = folderInput + figure_name + "_toRestore.tif"
-I = cv2.imread(figure_name_final, cv2.IMREAD_UNCHANGED)
+figure_name_final = os.path.join(folderInput, figure_name + "_toRestore.tif")
+print(figure_name_final)
+image_6 = cv2.imread(figure_name_final, cv2.IMREAD_UNCHANGED)
 
-# Normalize values into [0,1]
+# read mask image
+mask_img_name = os.path.join(folderInput, figure_name + "_mask.tif")
+mask_img_6 = cv2.imread(mask_img_name, cv2.IMREAD_UNCHANGED)
 
-min_val = np.min(I.ravel())
-max_val = np.max(I.ravel())
-I = I.astype("float") - min_val
-I = I / max_val
+image_inpainting(image_6, mask_img_6, result_folder, figure_name)
+# %%
+# image hola carola
+figure_name_final = os.path.join(folderInput, "Image_to_Restore.png")
+src_image = cv2.imread(figure_name_final)
+src_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2RGB)
 
-cv2.imshow("image6", I)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# Number of pixels for each dimension, and number of channels
-
-# height, width, number of channels in image
-ni = I.shape[0]
-nj = I.shape[1]
-nC = I.shape[2]
-
-
-figure_name = "image6"
-figure_name_final = folderInput + figure_name + "_mask.tif"
-mask_img = cv2.imread(figure_name_final, cv2.IMREAD_UNCHANGED)
-
-mask1 = mask_img > 128
-mask = mask1.astype("float")
-
-
-# mask(i,j) == 1 means we have lost information in that pixel
-# mask(i,j) == 0 means we have information in that pixel
-
-# visualize the mask
-cv2.imshow("mask>128", mask)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-param = Parameters(0, 0, 0, 0, 0)
-param.hi = 1 / (ni - 1)
-param.hj = 1 / (nj - 1)
-
-
-# visualize the image
-cv2.imshow("before", I)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-Iinp = np.zeros(I.shape, dtype=np.float)
-Iinp[:, :, 0] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(
-    I[:, :, 0], mask[:, :, 0], param
-)
-Iinp[:, :, 1] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(
-    I[:, :, 1], mask[:, :, 1], param
-)
-Iinp[:, :, 2] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(
-    I[:, :, 2], mask[:, :, 2], param
-)
-
-# visualize the image
-cv2.imshow("After", Iinp)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# Goal Image
-del I, mask_img, Iinp
-
-# Read the image
-figure_name = "image"
-figure_name_final = folderInput + figure_name + "_to_Restore.png"
-I = cv2.imread(figure_name_final, cv2.IMREAD_UNCHANGED)
-Iinp = np.zeros(I.shape, dtype=np.float)
-
-# height, width, number of channels in image
-ni = I.shape[0]
-nj = I.shape[1]
-nC = I.shape[2]
-
-# Normalize values into [0,1]
-
-min_val = np.min(I.ravel())
-max_val = np.max(I.ravel())
-I = I.astype("float") - min_val
-I = I / max_val
-
-# We want to inpaint those areas in which mask == 1(red part of the image)
-
-I_ch1 = I[:, :, 0]
-I_ch2 = I[:, :, 1]
-I_ch3 = I[:, :, 2]
-
-# BGR in Python
-
-# TO COMPLETE 1
-# create mask
+# Create mask
 lower_red = np.array([0, 0, 0])
 upper_red = np.array([255, 0, 0])
 
 # Create the mask
-mask = cv2.inRange(I, lower_red, upper_red)
+mask = cv2.inRange(src_image, lower_red, upper_red)
 
-# mask_img(i,j) == 1 means we have lost information in that pixel
-# mask(i,j) == 0 means we have information in that pixel
+# Convert the single channel mask to a 3 channel mask
+mask = cv2.merge([mask, mask, mask])
 
-# visualize the mask
-cv2.imshow("mask", mask)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# %%
+# Example image 1
+figure_name_ex1 = os.path.join(folderInput, "example 1.jpg")
+I_ex1 = cv2.imread(figure_name_ex1, cv2.IMREAD_UNCHANGED)
+I_ex1 = cv2.cvtColor(I_ex1, cv2.COLOR_BGR2RGB)
+I_ex1 = cv2.resize(I_ex1, (400, 400))
+# %%
+# Example image 2
+figure_name_ex2 = os.path.join(folderInput, "example 2.jpeg")
+I_ex2 = cv2.imread(figure_name_ex2, cv2.IMREAD_UNCHANGED)
+I_ex2 = cv2.cvtColor(I_ex2, cv2.COLOR_BGR2RGB)
+I_ex2 = cv2.resize(I_ex2, (400, 400))
+# %%
+# Read mask image for example 1
+mask_img_ex1 = os.path.join(folderInput, "example 1_mask.jpg")
+mask_img_1 = cv2.imread(mask_img_ex1, cv2.IMREAD_UNCHANGED)
+mask_img_1 = cv2.resize(mask_img_1, (400, 400))
+# %%
+# Read mask image for example 2
+mask_img_ex2 = os.path.join(folderInput, "example 2_mask.jpg")
+mask_img_2 = cv2.imread(mask_img_ex2, cv2.IMREAD_UNCHANGED)
+mask_img_2 = cv2.resize(mask_img_2, (400, 400))
 
+image_inpainting(I_ex1, mask_img_1, result_folder, "example_1")
+image_inpainting(I_ex2, mask_img_2, result_folder, "example_2")
+image_inpainting(src_image, mask, result_folder, "hola_carola")
 
-#  Parameters for gradient descent(you do not need for week1)
-# param.dt = 5 * 10 ^ -7;
-# param.iterMax = 10 ^ 4;
-# param.tol = 10 ^ -5;
-
-# parameters
-param.hi = 1 / (ni - 1)
-param.hj = 1 / (nj - 1)
-
-# for each channel
-
-# visualize the image
-cv2.imshow("Before", I)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-Iinp[:, :, 0] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(I_ch1, mask, param)
-Iinp[:, :, 1] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(I_ch2, mask, param)
-Iinp[:, :, 2] = sol_Laplace_Equation_Axb.sol_Laplace_Equation_Axb(I_ch3, mask, param)
-
-# visualize the image
-cv2.imshow("After", Iinp)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# %%
