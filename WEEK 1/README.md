@@ -142,3 +142,45 @@ For the Laplace equation in two dimensions, the five-point stencil discretizes t
 $ u_{i,j} = \frac{1}{4} (u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1}) $
 
 This results in the diagonal value of 4 and the off-diagonal values of -1. When this is applied to all pixels, it forms the system $A \times u = b$, which is then solved to get the inpainted image $u$.
+
+
+# Setup
+Clone repo and `cd` into the project folder:
+
+ ```
+git clone https://github.com/gunjanmimo/C2-IMAGE-INPAITING.git
+cd C2-IMAGE-INPAITING
+```
+
+Create and activate virtual environment:
+
+```
+python3 -m venv <virtual_environment_name>
+source <virtual_environment_name>/bin/activate
+```
+
+Install packages from `requirements.txt`:
+
+```
+pip install --upgrade pip wheel
+pip install -r requirements.txt
+```
+## Repository contents
+
+```
+.
+└── C2-IMAGE-INPAITING/
+    └── WEEK 1/
+        ├── sol_Laplace_Equation_Axb.py # main inpainting functions
+        ├── start.py                    # test codes
+        ├── start.ipynb                 # notebook with visualization
+        ├── README.md                   # our approach and setup details 
+        ├── IMAGES/                     # image directory
+        │   ├── image{N}_toRestore.jpg
+        │   ├── image{N}_mask.jpg
+        │   ├── example {N}.jpg
+        │   └── example {N}_mask.jpg
+        └── src/                        # images for README file
+            └── images for readme
+
+```
