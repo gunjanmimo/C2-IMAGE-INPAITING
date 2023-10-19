@@ -64,7 +64,7 @@ In Poisson Image Editing, the Poisson Equation is written as:
 
 $\Delta V = \Delta S $
 
-here $\Delta$ denotes the Laplacian. $\Delta V$ represents the Laplacian of the resulting image, and $\Delta S $ is the Laplacian of the source region.
+here $\Delta$ denotes the Laplacian. $\Delta V$ represents the Laplacian of the resulting image, and $\Delta S$ is the Laplacian of the source region.
 
 The equation ensures that the local features or details (as captured by the Laplacian) of the source $S$ are transferred to the resulting image $V$. 
 
