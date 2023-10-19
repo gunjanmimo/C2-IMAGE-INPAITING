@@ -19,13 +19,13 @@ $V$ = Blended or Resulting image, the final image obtained after the editing pro
 
 In a grayscale image (ignoring color for simplicity), the gradient at each pixel (x,y) can be represented as a 2D vector:
 
-$ \nabla I(x,y) = [\frac{\partial I}{\partial x},\frac{\partial I}{\partial y} ] $
+$\nabla I(x,y) = [\frac{\partial I}{\partial x},\frac{\partial I}{\partial y} ] $
 
 In discrete space, the partial derivatives can be approximated using finite differences:
 
-$ \frac{\partial I}{\partial x} \approx I(x+1,y) - I(x,y) $ 
+$\frac{\partial I}{\partial x} \approx I(x+1,y) - I(x,y) $ 
 
-$ \frac{\partial I}{\partial y} \approx I(x,y+1) - I(x,y) $ 
+$\frac{\partial I}{\partial y} \approx I(x,y+1) - I(x,y) $ 
 
 **Laplacian**: The Laplacian is a second-order differential operator that measures the difference between the value of a function at a point and the average of its neighbors. In the context of images, it gives a measure of how much a pixel stands out from its neighbors.
 
@@ -39,9 +39,9 @@ $\Delta I =  [\frac{\partial^2 I}{\partial x^2},\frac{\partial^2 I}{\partial y^2
 
 so, we can write the change of this first derivative as
 
-$ \frac{\partial^2 I}{\partial x^2} \approx (I(x+1,y) - I(x,y) )- (I(x,y) - I(x-1,y)) $
+$\frac{\partial^2 I}{\partial x^2} \approx (I(x+1,y) - I(x,y) )- (I(x,y) - I(x-1,y)) $
 
-$ \frac{\partial^2 I}{\partial y^2}  \approx (I(x,y+1) - I(x,y) )- (I(x,y) - I(x,y-1)) $
+$\frac{\partial^2 I}{\partial y^2}  \approx (I(x,y+1) - I(x,y) )- (I(x,y) - I(x,y-1)) $
 
 Simplifying this:
 
@@ -64,7 +64,7 @@ In Poisson Image Editing, the Poisson Equation is written as:
 
 $\Delta V = \Delta S $
 
-here $\Delta$ denotes the Laplacian. $\Delta V$ represents the Laplacian of the resulting image, and $\Delta S $ is the Laplacian of the source region.
+here $\Delta$ denotes the Laplacian. $\Delta V$ represents the Laplacian of the resulting image, and $\Delta S$ is the Laplacian of the source region.
 
 The equation ensures that the local features or details (as captured by the Laplacian) of the source $S$ are transferred to the resulting image $V$. 
 
