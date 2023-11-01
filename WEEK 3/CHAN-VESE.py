@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from scipy.ndimage import distance_transform_edt
 
 # Load the image in grayscale
 image = cv2.imread("./Screenshot 2023-10-29 at 00.42.02.png", cv2.IMREAD_GRAYSCALE)
@@ -14,7 +15,14 @@ rows, cols = image.shape
 # Define initial contour as a circle in the center
 center = (int(rows / 2), int(cols / 2))
 radius = 200  # arbitrary value, can be adjusted
-phi = np.ones((rows, cols)) * -1
+
+
+def initialize_phi():
+    phi = np.ones((rows, cols)) * -1
+    return phi
+
+
+phi = initialize_phi()
 cv2.circle(phi, center, radius, 1, -1)
 
 plt.imshow(phi)
@@ -47,7 +55,11 @@ def curvature(phi):
     return div
 
 
-for _ in tqdm(range(num_iterations)):
+stopping_threshold = 0.25
+for i in tqdm(range(num_iterations)):
+    old_phi = phi.copy()
+    if i % 50 == 0:
+        phi = initialize_phi()
     # update c1 and c2
     c1 = np.sum(image[phi > 0]) / (np.sum(phi > 0) + 1e-8)
     c2 = np.sum(image[phi <= 0]) / (np.sum(phi <= 0) + 1e-8)
@@ -59,9 +71,16 @@ for _ in tqdm(range(num_iterations)):
     # update phi
     phi = phi + tau * (mu * div - nu - F * delta_phi)
 
+    # stopping criteria
+    if np.max(np.abs(phi - old_phi)) < stopping_threshold:
+        break
+
 
 contour = np.uint8(phi > 0) * 255
 plt.imshow(contour, cmap="gray")
 plt.show()
 
 # %%
+
+
+# FARMACIA JOSE SANCHEZ, Plaça de Sant Agustí Vell, 11, 08003 Barcelona
