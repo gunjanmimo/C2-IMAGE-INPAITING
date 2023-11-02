@@ -70,6 +70,18 @@ For the minimization with respect to $\varphi$, H is regularized as:
 
 $H_\epsilon(t) = \frac{1}{2} \left(1 + \frac{2}{\pi} \arctan\left(\frac{t}{\epsilon}\right)\right)$
 
+$\varphi_{i,i}^{n+1}  \leftarrow [ \varphi_{i,i}^n + dt \delta_\epsilon(\varphi_{i,j}^n)(A_{i,j, \varphi_{i+1,j}^n } + A_{i-1,j, \varphi_{i-1,j}^{n+1}} + B_{i,j, \varphi_{i,j+1}^n}  +B_{i,j-1, \varphi_{i,j-1}^{n+1}} - \upsilon - \lambda_1(f_{i,j} - c_1)^2 + \lambda_2(f_{i,j} - c_2)^2 / [ 1 + dt \delta_\epsilon ( \varphi_{i,j}) ( A_{i,j} + A_{i-1,j} + B_{i,j} + B_{i,j-1}]$ 
+
+$A_{i,j} = \frac{\mu}{\sqrt{\eta^2 + (\nabla_x + \varphi_{i,j})^2 + (\nabla_y^0 \varphi_{i,j})^2}}$
+$B_{i,j} = \frac{\mu}{\sqrt{\eta^2 + (\nabla_x^0 + \varphi_{i,j})^2 + (\nabla_y \varphi_{i,j})^2}}$
+
+
+
+
+
+
+
+
 
 
 
